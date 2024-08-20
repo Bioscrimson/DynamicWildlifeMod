@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Verse;
+using System.Linq;
 
 namespace Dynamic_Wildlife.Patches
 {
@@ -8,20 +9,21 @@ namespace Dynamic_Wildlife.Patches
     {
         static void Postfix(Pawn __instance, DamageInfo? dinfo, Hediff exactCulprit)
         {
-            // Check if the pawn's map is available
-            if (__instance.Map == null)
+            // Get the map from the pawn
+            var map = __instance.Map ?? Find.Maps.FirstOrDefault(m => m.mapPawns.AllPawnsSpawned.Any(p => p == __instance));
+
+            if (map == null)
             {
-                Log.Warning($"Pawn's map is null. Pawn: {__instance.LabelShort}, Kind: {__instance.kindDef.defName}");
+                Log.Warning($"Unable to find the map for pawn: {__instance.LabelShort}, Kind: {__instance.kindDef.defName}");
                 return; // Exit early if no map is available
             }
 
             // Log message to ensure this method is being called
-            Log.Message($"Kill Postfix called for pawn: {__instance.LabelShort}, map: {__instance.Map}");
+            Log.Message($"Kill Postfix called for pawn: {__instance.LabelShort}, map: {map}");
 
             // Ensure that the pawn is an animal and has died
             if (__instance.RaceProps.Animal)
             {
-                var map = __instance.Map;
                 var mapComponent = map.GetComponent<DynamicWildlifeMapComponent>();
                 if (mapComponent != null)
                 {
