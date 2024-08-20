@@ -6,7 +6,6 @@ namespace Dynamic_Wildlife
 {
     public class DynamicWildlifeMapComponent : MapComponent
     {
-        private Dictionary<int, Dictionary<string, float>> tileAnimalCommonalities = new Dictionary<int, Dictionary<string, float>>();
         private Dictionary<string, float> adjustedCommonality = new Dictionary<string, float>();
         private const float PenaltyPerDeath = 0.01f;
         private bool initialized = false;
@@ -16,10 +15,29 @@ namespace Dynamic_Wildlife
             Log.Message("DynamicWildlifeMapComponent initialized.");
         }
 
+        // Override ExposeData to save and load adjusted commonality
         public override void ExposeData()
         {
             base.ExposeData();
             Scribe_Collections.Look(ref adjustedCommonality, "adjustedCommonality", LookMode.Value, LookMode.Value);
+
+            // Log to verify the values during save/load
+            if (Scribe.mode == LoadSaveMode.Saving)
+            {
+                Log.Message("Saving adjusted commonality values:");
+                foreach (var kvp in adjustedCommonality)
+                {
+                    Log.Message($"- {kvp.Key}: {kvp.Value:F2}");
+                }
+            }
+            else if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                Log.Message("Loading adjusted commonality values:");
+                foreach (var kvp in adjustedCommonality)
+                {
+                    Log.Message($"- {kvp.Key}: {kvp.Value:F2}");
+                }
+            }
         }
 
         public override void MapComponentTick()
@@ -32,14 +50,10 @@ namespace Dynamic_Wildlife
                 initialized = true;
             }
         }
+
         private void InitializeAnimalCommonalitiesForTile(int tileID)
         {
-            if (!tileAnimalCommonalities.ContainsKey(tileID))
-            {
-                tileAnimalCommonalities[tileID] = new Dictionary<string, float>();
-            }
-
-            var commonalities = tileAnimalCommonalities[tileID];
+            var commonalities = adjustedCommonality;
 
             foreach (var pawnKindDef in DefDatabase<PawnKindDef>.AllDefsListForReading)
             {
@@ -50,11 +64,11 @@ namespace Dynamic_Wildlife
                     {
                         float baseCommonality = map.Biome.CommonalityOfAnimal(pawnKindDef);
                         commonalities[defName] = baseCommonality;
-                        adjustedCommonality[defName] = baseCommonality;
                     }
                 }
             }
         }
+
         public void RecordAnimalDeath(string animalType)
         {
             if (adjustedCommonality.ContainsKey(animalType))
