@@ -9,24 +9,11 @@ namespace Dynamic_Wildlife
 {
     public static class Check_Biome_Affinity
     {
+        // Get the wildBiomes field from RaceProps using reflection
         private static FieldInfo GetWildBiomesField()
         {
-            // Try getting the field with both possible names and using different flags
-            var type = typeof(PawnKindDef);
-            FieldInfo field = type.GetField("wildBiomes", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            if (field == null)
-            {
-                // Check for potential alternative field names or protected/internal access
-                Log.Warning("Field 'wildBiomes' not found. Checking other possible names.");
-                // You may need to list all fields to find the correct one
-                var fields = type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
-                foreach (var f in fields)
-                {
-                    Log.Message($"Field found: {f.Name}");
-                }
-            }
-
+            var racePropsType = typeof(RaceProperties);
+            var field = racePropsType.GetField("wildBiomes", BindingFlags.NonPublic | BindingFlags.Instance);
             return field;
         }
 
@@ -38,6 +25,13 @@ namespace Dynamic_Wildlife
                 return null;
             }
 
+            var raceProps = pawnKindDef.race;
+            if (raceProps == null)
+            {
+                Log.Warning($"{pawnKindDef.defName} has no RaceProperties.");
+                return null;
+            }
+
             var wildBiomesField = GetWildBiomesField();
             if (wildBiomesField == null)
             {
@@ -45,13 +39,14 @@ namespace Dynamic_Wildlife
                 return null;
             }
 
-            var wildBiomes = wildBiomesField.GetValue(pawnKindDef) as List<AnimalBiomeRecord>;
+            var wildBiomes = wildBiomesField.GetValue(raceProps) as List<AnimalBiomeRecord>;
             if (wildBiomes == null || !wildBiomes.Any())
             {
                 Log.Warning($"{pawnKindDef.defName} does not have any associated wild biomes.");
                 return null;
             }
 
+            // Convert List<AnimalBiomeRecord> to List<KeyValuePair<BiomeDef, float>>
             var sortedBiomes = wildBiomes
                 .Select(record => new KeyValuePair<BiomeDef, float>(record.biome, record.commonality))
                 .OrderByDescending(biomeEntry => biomeEntry.Value)
