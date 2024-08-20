@@ -8,14 +8,17 @@ namespace Dynamic_Wildlife.Patches
     {
         static bool Prefix(Pawn __instance, ref DamageInfo? dinfo, ref Hediff exactCulprit)
         {
-            // Check if the map is available before the pawn is killed
-            var map = __instance.Map ?? __instance.prevMap;
+            // Check if the pawn is currently on a map
+            var map = __instance.Map;
 
             if (map == null)
             {
                 Log.Warning($"Unable to find the map for pawn: {__instance.LabelShort}, Kind: {__instance.kindDef.defName}");
                 return true; // Allow the original Kill method to proceed
             }
+
+            // Log message to ensure this method is being called
+            Log.Message($"Kill Prefix called for pawn: {__instance.LabelShort}, map: {map}");
 
             // Ensure that the pawn is an animal and has died
             if (__instance.RaceProps.Animal)
