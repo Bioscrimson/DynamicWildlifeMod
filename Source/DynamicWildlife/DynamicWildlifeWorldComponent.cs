@@ -6,11 +6,13 @@ namespace Dynamic_Wildlife
 {
     public class DynamicWildlifeWorldComponent : WorldComponent
     {
-        public HashSet<int> PenalizedTiles => penalizedTiles; // getter
-        private HashSet<int> penalizedTiles = new HashSet<int>(); // can't wrap this into a single property due to needing to save in ExposeData()
-        
+        private HashSet<int> penalizedTiles = new HashSet<int>();
+        private WorldLayer_PenalizedTiles worldLayer;
+
         public DynamicWildlifeWorldComponent(World world) : base(world)
         {
+            // Initialization can happen here, but to add layers I must use a good method?
+            worldLayer = new WorldLayer_PenalizedTiles();
         }
 
         public override void ExposeData()
@@ -19,18 +21,35 @@ namespace Dynamic_Wildlife
             Scribe_Collections.Look(ref penalizedTiles, "penalizedTiles", LookMode.Value);
         }
 
+        public HashSet<int> GetPenalizedTiles()
+        {
+            return penalizedTiles;
+        }
+
         public void MarkTileAsPenalized(int tileID)
         {
             if (penalizedTiles.Add(tileID))
             {
-                world.renderer.SetDirty<WorldLayer_PenalizedTiles>();
+                // Assuming some method or hook to refresh world rendering
+                RefreshWorldLayer();
             }
         }
 
-        //May be obsolete due to a public getter allowing for contains to be applied at location of use
         public bool IsTilePenalized(int tileID)
         {
             return penalizedTiles.Contains(tileID);
+        }
+
+        public void ClearPenalizedTilesOverlay()
+        {
+            penalizedTiles.Clear();
+            RefreshWorldLayer();
+        }
+
+        private void RefreshWorldLayer()
+        {
+            // Ensure you refresh or re-render the custom layer correctly.
+            Find.World.renderer.RegenerateAllLayers(); // Example method, I must find a good one
         }
     }
 }

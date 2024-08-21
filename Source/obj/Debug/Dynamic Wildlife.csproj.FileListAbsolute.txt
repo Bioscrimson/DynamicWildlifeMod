@@ -1,0 +1,10 @@
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Dynamic Wildlife\Source\Dynamic Wildlife\bin\Debug\Dynamic Wildlife.dll
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Dynamic Wildlife\Source\Dynamic Wildlife\bin\Debug\Dynamic Wildlife.pdb
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Dynamic Wildlife\Source\Dynamic Wildlife\bin\Debug\0Harmony.dll
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Dynamic Wildlife\Source\Dynamic Wildlife\bin\Debug\0Harmony.pdb
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Dynamic Wildlife\Source\Dynamic Wildlife\bin\Debug\0Harmony.xml
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Dynamic Wildlife\Source\Dynamic Wildlife\obj\Debug\Dynamic Wildlife.csproj.AssemblyReference.cache
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Dynamic Wildlife\Source\Dynamic Wildlife\obj\Debug\Dynamic Wildlife.csproj.CoreCompileInputs.cache
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Dynamic Wildlife\Source\Dynamic Wildlife\obj\Debug\Dynamic .D014451D.Up2Date
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Dynamic Wildlife\Source\Dynamic Wildlife\obj\Debug\Dynamic Wildlife.dll
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Dynamic Wildlife\Assemblies\Dynamic Wildlife.dll
