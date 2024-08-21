@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Verse;
 using RimWorld.Planet;
+using UnityEngine;
 
 namespace Dynamic_Wildlife
 {
@@ -11,7 +12,7 @@ namespace Dynamic_Wildlife
 
         public DynamicWildlifeWorldComponent(World world) : base(world)
         {
-            // Initialization can happen here, but to add layers I must use a good method?
+            // Initialize worldLayer
             worldLayer = new WorldLayer_PenalizedTiles();
         }
 
@@ -21,18 +22,10 @@ namespace Dynamic_Wildlife
             Scribe_Collections.Look(ref penalizedTiles, "penalizedTiles", LookMode.Value);
         }
 
-        public HashSet<int> GetPenalizedTiles()
-        {
-            return penalizedTiles;
-        }
-
         public void MarkTileAsPenalized(int tileID)
         {
-            if (penalizedTiles.Add(tileID))
-            {
-                // Assuming some method or hook to refresh world rendering
-                RefreshWorldLayer();
-            }
+            penalizedTiles.Add(tileID);
+            DrawPenalizedTilesOverlay(); // Update the overlay
         }
 
         public bool IsTilePenalized(int tileID)
@@ -43,13 +36,27 @@ namespace Dynamic_Wildlife
         public void ClearPenalizedTilesOverlay()
         {
             penalizedTiles.Clear();
-            RefreshWorldLayer();
+            DrawPenalizedTilesOverlay(); // Update the overlay
         }
 
-        private void RefreshWorldLayer()
+        public HashSet<int> GetPenalizedTiles()
         {
-            // Ensure you refresh or re-render the custom layer correctly.
-            Find.World.renderer.RegenerateAllLayers(); // Example method, I must find a good one
+            return penalizedTiles;
+        }
+
+        public void DrawPenalizedTilesOverlay()
+        {
+            // Ensure worldLayer is initialized
+            if (worldLayer == null)
+            {
+                worldLayer = new WorldLayer_PenalizedTiles();
+            }
+
+            // Add or update the world layer
+            Find.World.renderer.wantedLayers.Add(worldLayer); // This assumes I want to update the layers list directly
+
+            // Alternatively, force the world to redraw
+            Find.World.renderer.RebuildAllLayers(); // Check if this method exists or use similar method to trigger a redraw
         }
     }
 }

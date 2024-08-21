@@ -22,16 +22,21 @@ namespace Dynamic_Wildlife
             LayerSubMesh subMesh = GetSubMesh(penalizedTileMaterial);
             subMesh.Clear(MeshParts.All);
 
-            HashSet<int> penalizedTiles = Find.World.GetComponent<DynamicWildlifeWorldComponent>().GetPenalizedTiles();
-            foreach (int tileID in penalizedTiles)
+            // Get the DynamicWildlifeWorldComponent instance
+            DynamicWildlifeWorldComponent dwComponent = Find.World.GetComponent<DynamicWildlifeWorldComponent>();
+            if (dwComponent != null)
             {
-                Vector3 tileCenter = Find.WorldGrid.GetTileCenter(tileID);
-                WorldRendererUtility.PrintQuadTangentialToPlanet(tileCenter, 0.7f * Find.WorldGrid.averageTileSize, 0.01f, subMesh, false, true, true);
+                HashSet<int> penalizedTiles = dwComponent.GetPenalizedTiles();
+                foreach (int tileID in penalizedTiles)
+                {
+                    Vector3 tileCenter = Find.WorldGrid.GetTileCenter(tileID);
+                    WorldRendererUtility.PrintQuadTangentialToPlanet(tileCenter, 0.7f * Find.WorldGrid.averageTileSize, 0.01f, subMesh, false, true, true);
+                }
             }
 
             FinalizeMesh(MeshParts.All);
 
-            yield break;
+            yield break; // Return an empty IEnumerable
         }
     }
 }
