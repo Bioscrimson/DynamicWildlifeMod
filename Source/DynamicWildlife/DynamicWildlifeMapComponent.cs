@@ -15,28 +15,19 @@ namespace Dynamic_Wildlife
             Log.Message("DynamicWildlifeMapComponent initialized.");
         }
 
-        // Override ExposeData to save and load adjusted commonality
         public override void ExposeData()
         {
             base.ExposeData();
             Scribe_Collections.Look(ref adjustedCommonality, "adjustedCommonality", LookMode.Value, LookMode.Value);
 
-            // Log to verify the values during save/load
+            // Log a single message to verify that the adjustedCommonality dictionary is being saved/loaded
             if (Scribe.mode == LoadSaveMode.Saving)
             {
-                Log.Message("Saving adjusted commonality values:");
-                foreach (var kvp in adjustedCommonality)
-                {
-                    Log.Message($"- {kvp.Key}: {kvp.Value:F2}");
-                }
+                Log.Message("Saving adjusted commonality values for all animals.");
             }
             else if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
-                Log.Message("Loading adjusted commonality values:");
-                foreach (var kvp in adjustedCommonality)
-                {
-                    Log.Message($"- {kvp.Key}: {kvp.Value:F2}");
-                }
+                Log.Message("Loading adjusted commonality values for all animals.");
             }
         }
 
@@ -53,19 +44,25 @@ namespace Dynamic_Wildlife
 
         private void InitializeAnimalCommonalitiesForTile(int tileID)
         {
-            var commonalities = adjustedCommonality;
+            int initializedCount = 0;
 
             foreach (var pawnKindDef in DefDatabase<PawnKindDef>.AllDefsListForReading)
             {
                 if (pawnKindDef.RaceProps.Animal)
                 {
                     string defName = pawnKindDef.defName;
-                    if (!commonalities.ContainsKey(defName))
+                    if (!adjustedCommonality.ContainsKey(defName))
                     {
                         float baseCommonality = map.Biome.CommonalityOfAnimal(pawnKindDef);
-                        commonalities[defName] = baseCommonality;
+                        adjustedCommonality[defName] = baseCommonality;
+                        initializedCount++;
                     }
                 }
+            }
+
+            if (initializedCount > 0)
+            {
+                Log.Message($"Initialized base commonality values for {initializedCount} animals.");
             }
         }
 
