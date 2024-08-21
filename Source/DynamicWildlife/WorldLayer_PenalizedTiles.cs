@@ -6,32 +6,41 @@ using RimWorld.Planet;
 
 namespace Dynamic_Wildlife
 {
+    [StaticConstructorOnStartup]
     public class WorldLayer_PenalizedTiles : WorldLayer
     {
-        private Material penalizedTileMaterial;
-
+        //This is set in the main thread (required) during the StaticConstructorOnStartup stage
+        private static Material PenalizedTileMat = MaterialPool.MatFrom("UI/Overlays/PlanetGlow", ShaderDatabase.WorldOverlayTransparent, Color.red);
+        private DynamicWildlifeWorldComponent worldComponent;
+        
         public WorldLayer_PenalizedTiles()
         {
-            penalizedTileMaterial = MaterialPool.MatFrom("World/PlanetGlow/planetglow", ShaderDatabase.WorldOverlayTransparent, Color.red);
         }
 
         public override IEnumerable Regenerate()
         {
-            base.Regenerate();
+            if(worldComponent is null) worldComponent = Find.World.GetComponent<DynamicWildlifeWorldComponent>(); //WorldComponents are instantiated _after_ WorldLayers, so cache on first regen (which is after they are both created) 
+            
+            foreach(var item in base.Regenerate()) // even though base.Regeneration only yields once, better to encapsulate with an iteration block for safety
+            {
+                yield return item;
+            }
 
-            LayerSubMesh subMesh = GetSubMesh(penalizedTileMaterial);
-            subMesh.Clear(MeshParts.All);
+            LayerSubMesh subMesh = GetSubMesh(PenalizedTileMat);
 
-            HashSet<int> penalizedTiles = Find.World.GetComponent<DynamicWildlifeWorldComponent>().GetPenalizedTiles();
-            foreach (int tileID in penalizedTiles)
+            foreach (int tileID in worldComponent.PenalizedTiles)
             {
                 Vector3 tileCenter = Find.WorldGrid.GetTileCenter(tileID);
                 WorldRendererUtility.PrintQuadTangentialToPlanet(tileCenter, 0.7f * Find.WorldGrid.averageTileSize, 0.01f, subMesh, false, true, true);
             }
 
             FinalizeMesh(MeshParts.All);
+        }
 
-            yield break;
+        public override void Render()
+        {
+            if (!WorldTabUI.OverlayEnabled) return; //skip render when UI toggled
+            base.Render();
         }
     }
 }

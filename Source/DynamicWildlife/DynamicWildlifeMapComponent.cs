@@ -7,14 +7,17 @@ namespace Dynamic_Wildlife
 {
     public class DynamicWildlifeMapComponent : MapComponent
     {
-        private Dictionary<string, float> adjustedCommonality = new Dictionary<string, float>();
         private const float PenaltyPerDeath = 0.01f;
         private const float NeighborPenaltyMultiplier = 0.5f; // 50% penalty for neighboring tiles
+        
+        private Dictionary<string, float> adjustedCommonality = new Dictionary<string, float>();
         private bool initialized = false;
-
+        private DynamicWildlifeWorldComponent worldComponent;
+        
         public DynamicWildlifeMapComponent(Map map) : base(map)
         {
             Log.Message("DynamicWildlifeMapComponent initialized.");
+            worldComponent = Find.World.GetComponent<DynamicWildlifeWorldComponent>();
         }
 
         public override void ExposeData()
@@ -103,6 +106,7 @@ namespace Dynamic_Wildlife
                         DynamicWildlifeMapComponent neighborComponent = neighborMap.GetComponent<DynamicWildlifeMapComponent>();
                         if (neighborComponent != null)
                         {
+                            //NOTE: THIS WILL RARELY EVER BE TRIGGERED SINCE HAVING NEIGHBOURING TILES WITH MAPS ARE _EXTREMELY_ RARE
                             neighborComponent.ApplyNeighborPenalty(animalType, NeighborPenaltyMultiplier);
                         }
                     }
@@ -124,7 +128,7 @@ namespace Dynamic_Wildlife
                 Log.Message($"Neighbor penalty applied to {animalType}: old commonality = {currentCommonality:F2}, penalty = {penalty:F2}, new adjusted commonality = {newCommonality:F2}");
 
                 // Mark the current map's tile as penalized
-                Find.World.GetComponent<DynamicWildlifeWorldComponent>().MarkTileAsPenalized(map.Tile);
+                worldComponent.MarkTileAsPenalized(map.Tile);
             }
         }
 
