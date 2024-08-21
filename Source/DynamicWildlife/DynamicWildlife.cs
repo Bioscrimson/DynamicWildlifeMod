@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Verse;
+using RimWorld.Planet;
 
 namespace Dynamic_Wildlife
 {
@@ -11,14 +12,26 @@ namespace Dynamic_Wildlife
             Harmony harmony = new Harmony("com.dreadofcrimson.dynamicwildlife");
             harmony.PatchAll();
 
-            // Register the GameComponent
-            LongEventHandler.QueueLongEvent(() =>
+            // Register the WorldComponent and GameComponent
+            LongEventHandler.ExecuteWhenFinished(() =>
             {
+                // Ensure the DynamicWildlifeWorldComponent is added to the World
                 if (Find.World != null && Find.World.GetComponent<DynamicWildlifeWorldComponent>() == null)
                 {
                     Find.World.components.Add(new DynamicWildlifeWorldComponent(Find.World));
                 }
-            }, "Registering Dynamic Wildlife Components", false, null);
+
+                // Ensure the WorldTabUI component is added
+                if (Current.Game != null)
+                {
+                    var existingComponent = Current.Game.GetComponent<WorldTabUI>();
+                    if (existingComponent == null)
+                    {
+                        // Add WorldTabUI if it does not exist
+                        Current.Game.components.Add(new WorldTabUI(Current.Game));
+                    }
+                }
+            });
 
             // Log the initialization
             Log.Message("DynamicWildlifeMod initialized and Harmony patches applied.");

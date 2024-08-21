@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 using Verse;
-using RimWorld;
 using RimWorld.Planet;
 
 namespace Dynamic_Wildlife
@@ -9,18 +7,12 @@ namespace Dynamic_Wildlife
     public class DynamicWildlifeWorldComponent : WorldComponent
     {
         private HashSet<int> penalizedTiles = new HashSet<int>();
-        private Material penalizedTileMaterial;
+        private WorldLayer_PenalizedTiles worldLayer;
 
         public DynamicWildlifeWorldComponent(World world) : base(world)
         {
-            // Queue initialization to run on the main thread
-            LongEventHandler.QueueLongEvent(InitializeMaterial, "LoadingDynamicWildlifeMaterial", false, null);
-        }
-
-        private void InitializeMaterial()
-        {
-            // Try to use a placeholder texture to check if the issue is with the texture path
-            penalizedTileMaterial = MaterialPool.MatFrom("World/PlanetGlow", ShaderDatabase.WorldOverlayTransparent, Color.red);
+            // Initialization can happen here, but to add layers I must use a good method?
+            worldLayer = new WorldLayer_PenalizedTiles();
         }
 
         public override void ExposeData()
@@ -29,9 +21,18 @@ namespace Dynamic_Wildlife
             Scribe_Collections.Look(ref penalizedTiles, "penalizedTiles", LookMode.Value);
         }
 
+        public HashSet<int> GetPenalizedTiles()
+        {
+            return penalizedTiles;
+        }
+
         public void MarkTileAsPenalized(int tileID)
         {
-            penalizedTiles.Add(tileID);
+            if (penalizedTiles.Add(tileID))
+            {
+                // Assuming some method or hook to refresh world rendering
+                RefreshWorldLayer();
+            }
         }
 
         public bool IsTilePenalized(int tileID)
@@ -39,35 +40,16 @@ namespace Dynamic_Wildlife
             return penalizedTiles.Contains(tileID);
         }
 
-        public override void WorldComponentUpdate()
-        {
-            base.WorldComponentUpdate();
-
-            if (Find.World.renderer.wantedMode == WorldRenderMode.Planet)
-            {
-                DrawPenalizedTilesOverlay();
-            }
-        }
-
-        public void DrawPenalizedTilesOverlay()
-        {
-            if (penalizedTileMaterial == null)
-            {
-                // Material not initialized yet
-                return;
-            }
-
-            foreach (int tileID in penalizedTiles)
-            {
-                Vector3 tileCenter = Find.WorldGrid.GetTileCenter(tileID);
-                WorldRendererUtility.DrawQuadTangentialToPlanet(tileCenter, 0.4f, 0.01f, penalizedTileMaterial);
-            }
-        }
-
         public void ClearPenalizedTilesOverlay()
         {
-            // Clear or hide the overlay logic here
-            penalizedTiles.Clear(); // Clear the tiles
+            penalizedTiles.Clear();
+            RefreshWorldLayer();
+        }
+
+        private void RefreshWorldLayer()
+        {
+            // Ensure you refresh or re-render the custom layer correctly.
+            Find.World.renderer.RegenerateAllLayers(); // Example method, I must find a good one
         }
     }
 }
